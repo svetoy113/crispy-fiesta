@@ -1,0 +1,156 @@
+name: Build Python Executable and Create Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-20.04
+          - ubuntu-22.04
+          # - macos-latest
+          # - windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
+
+      # Install Chrome (Only for Ubuntu)
+      # - name: Install Chrome (Ubuntu)
+      #   if: startsWith(matrix.os, 'ubuntu')
+      #   run: |
+      #     wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+      #     sudo apt-get install -y ./google-chrome-stable_current_amd64.deb
+      #     sudo apt-get install -y -f
+      #     rm google-chrome-stable_current_amd64.deb
+      #     echo "Chrome: " && google-chrome --version
+
+      # Install dependencies for Linux and macOS
+      - name: Install Dependencies (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: |
+          pip install -U pip
+          pip install pyinstaller 
+        shell: bash
+
+      # Install dependencies for Windows
+      # - name: Install Dependencies (Windows)
+      #   if: runner.os == 'Windows'
+      #   run: |
+      #     pip install -U pip
+      #     pip install pyinstaller 
+      #     pip install nuitka
+      #     pip install workerpool
+      #     pip install selenium
+      #     # Exclude xvfbwrapper and pyvirtualdisplay for Windows
+      #     pip install webdriver_manager
+      #     pip install python-dotenv
+      #   shell: pwsh
+
+      # Build Executable
+      - name: Build Executable (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: pyinstaller --onefile --add-binary="./citu:./citu" app.py
+        # run: nuitka3 --onefile --include-data-dir=nopecha=./nopecha --include-data-dir=selenium=./selenium --include-data-dir=proxy=./proxy sage.py
+        shell: bash
+
+      # - name: Build Executable (Windows)
+      #   if: runner.os == 'Windows'
+      #   # run: pyinstaller --onefile --add-data "module:module" --add-data "proxy:proxy" --add-data "nopecha:nopecha" --hidden-import=anyio --hidden-import=argon2-cffi --hidden-import=argon2-cffi-bindings --hidden-import=arrow --hidden-import=asttokens --hidden-import=async-lru --hidden-import=attrs --hidden-import=Babel --hidden-import=backcall --hidden-import=beautifulsoup4 --hidden-import=bleach --hidden-import=certifi --hidden-import=cffi --hidden-import=charset-normalizer --hidden-import=colorama --hidden-import=comm --hidden-import=contourpy --hidden-import=cycler --hidden-import=debugpy --hidden-import=decorator --hidden-import=defusedxml --hidden-import=exceptiongroup --hidden-import=executing --hidden-import=fastjsonschema --hidden-import=filelock --hidden-import=fonttools --hidden-import=fqdn --hidden-import=fsspec --hidden-import=gitdb --hidden-import=GitPython --hidden-import=idna --hidden-import=ipykernel --hidden-import=ipython --hidden-import=isoduration --hidden-import=jedi --hidden-import=Jinja2 --hidden-import=joblib --hidden-import=json5 --hidden-import=jsonpointer --hidden-import=jsonschema --hidden-import=jsonschema-specifications --hidden-import=jupyter-events --hidden-import=jupyter-lsp --hidden-import=jupyter-server-mathjax --hidden-import=jupyter_client --hidden-import=jupyter_core --hidden-import=jupyter_server --hidden-import=jupyter_server_terminals --hidden-import=jupyterlab --hidden-import=jupyterlab-pygments --hidden-import=jupyterlab_git --hidden-import=jupyterlab_server --hidden-import=kiwisolver --hidden-import=MarkupSafe --hidden-import=matplotlib --hidden-import=matplotlib-inline --hidden-import=mistune --hidden-import=mpmath --hidden-import=nbclient --hidden-import=nbconvert --hidden-import=nbdime --hidden-import=nbformat --hidden-import=nest-asyncio --hidden-import=networkx --hidden-import=notebook_shim --hidden-import=numpy --hidden-import=nvidia-cublas-cu12 --hidden-import=nvidia-cuda-cupti-cu12 --hidden-import=nvidia-cuda-nvrtc-cu12 --hidden-import=nvidia-cuda-runtime-cu12 --hidden-import=nvidia-cudnn-cu12 --hidden-import=nvidia-cufft-cu12 --hidden-import=nvidia-curand-cu12 --hidden-import=nvidia-cusolver-cu12 --hidden-import=nvidia-cusparse-cu12 --hidden-import=nvidia-nccl-cu12 --hidden-import=nvidia-nvjitlink-cu12 --hidden-import=nvidia-nvtx-cu12 --hidden-import=overrides --hidden-import=packaging --hidden-import=pandas --hidden-import=pandocfilters --hidden-import=parso --hidden-import=pexpect --hidden-import=pickleshare --hidden-import=Pillow --hidden-import=platformdirs --hidden-import=plotly --hidden-import=prometheus-client --hidden-import=prompt-toolkit --hidden-import=psutil --hidden-import=ptyprocess --hidden-import=pure-eval --hidden-import=pycparser --hidden-import=Pygments --hidden-import=pyparsing --hidden-import=python-dateutil --hidden-import=python-json-logger --hidden-import=pytz --hidden-import=PyYAML --hidden-import=pyzmq --hidden-import=referencing --hidden-import=requests --hidden-import=rfc3339-validator --hidden-import=rfc3986-validator --hidden-import=rpds-py --hidden-import=scikit-learn --hidden-import=scipy --hidden-import=seaborn --hidden-import=Send2Trash --hidden-import=six --hidden-import=smmap --hidden-import=sniffio --hidden-import=soupsieve --hidden-import=stack-data --hidden-import=sympy --hidden-import=tenacity --hidden-import=terminado --hidden-import=threadpoolctl --hidden-import=tinycss2 --hidden-import=tomli --hidden-import=torch --hidden-import=tornado --hidden-import=traitlets --hidden-import=triton --hidden-import=types-python-dateutil --hidden-import=typing_extensions --hidden-import=tzdata --hidden-import=uri-template --hidden-import=urllib3 --hidden-import=wcwidth --hidden-import=webcolors --hidden-import=webencodings --hidden-import=websocket-client sage.py
+      #   run: nuitka3 --onefile --include-data-dir=nopecha=./nopecha --include-data-dir=proxy=./proxy sage.py
+      #   shell: pwsh
+
+      # Check file list
+      # - name: Check file list (Linux/macOS)
+      #   if: runner.os != 'Windows'
+      #   run: ls -l ./sage.dist
+      
+      # - name: Check file list (Windows)
+      #   if: runner.os == 'Windows'
+      #   run: dir ./sage.dist
+
+      
+      # Compress to platform-specific format for Linux and macOS
+      - name: Compress to Tar Gz (Linux/macOS)
+        if: runner.os != 'Windows'
+        run: tar -czvf ${{ matrix.os }}.tar.gz ./dist/app/app
+        shell: bash
+
+      # Compress to Zip format for Windows
+      # - name: Compress to Zip (Windows)
+      #   if: runner.os == 'Windows'
+      #   run: Compress-Archive -Path ./sage.dist -DestinationPath sage_${{ matrix.os }}.zip
+      #   shell: pwsh
+
+      # Upload Artifact
+      - name: Upload Artifact
+        if: runner.os != 'Windows'
+        uses: actions/upload-artifact@v2
+        with:
+          name: dist
+          path: ./${{ matrix.os }}.tar.gz
+     
+      # Upload Artifact
+      # - name: Upload Artifact
+      #   if: runner.os == 'Windows'
+      #   uses: actions/upload-artifact@v2
+      #   with:
+      #     name: dist
+      #     path: ./sage_${{ matrix.os }}.zip
+
+  release:
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+
+      - name: Check file list
+        run: |
+              ls -la ./dist
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: v1.0
+          release_name: Release v1.0
+          body: |
+            Release notes for v1.0:
+            - Add new feature
+            - Fix bugs
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Upload Release Asset (Ubuntu 20.04)
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/ubuntu-20.04.tar.gz
+          asset_name: ubuntu-20.04.tar.gz
+          asset_content_type: application/gzip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Upload Release Asset (Ubuntu 22.04)
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/ubuntu-22.04.tar.gz
+          asset_name: ubuntu-22.04.tar.gz
+          asset_content_type: application/gzip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+

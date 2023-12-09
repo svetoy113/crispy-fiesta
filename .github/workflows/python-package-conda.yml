@@ -70,7 +70,7 @@ jobs:
       #   run: nuitka3 --onefile --include-data-dir=nopecha=./nopecha --include-data-dir=proxy=./proxy sage.py
       #   shell: pwsh
 
-      Check file list
+      # Check file list
       - name: Check file list (Linux/macOS)
         if: runner.os != 'Windows'
         run: ls -l ./dist
